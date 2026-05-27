@@ -6,40 +6,53 @@
 
 <title>FishRank</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
 <style>
 
 body{
     background:#0d1117;
     color:white;
     font-family:Arial;
-    text-align:center;
-    padding:40px;
+    padding:30px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
 }
 
 .card{
     background:#161b22;
-    padding:30px;
+    padding:25px;
     border-radius:20px;
-    max-width:500px;
-    margin:auto;
+    margin-bottom:20px;
 }
 
 input{
-    width:90%;
+    width:100%;
     padding:12px;
-    margin:10px;
+    margin-top:10px;
     border:none;
     border-radius:10px;
 }
 
 button{
+    margin-top:15px;
+    padding:12px 20px;
     background:#00bfff;
     color:white;
     border:none;
-    padding:15px 25px;
     border-radius:10px;
     cursor:pointer;
     font-size:16px;
+}
+
+.rank{
+    background:#1e242d;
+    padding:15px;
+    border-radius:15px;
+    margin-top:10px;
 }
 
 h1{
@@ -51,23 +64,109 @@ h1{
 
 <body>
 
-<div class=\"card\">
+<div class="container">
+
+<div class="card">
 
 <h1>FishRank</h1>
 
 <p>Registre sua captura</p>
 
-<input type=\"text\" placeholder=\"Nome do peixe\">
+<input type="text" id="fish" placeholder="Peixe">
 
-<input type=\"text\" placeholder=\"Peso (kg)\">
+<input type="number" id="weight" placeholder="Peso (kg)">
 
-<input type=\"text\" placeholder=\"Seu nome\">
+<input type="text" id="angler" placeholder="Seu nome">
 
-<button>
+<button onclick="saveCatch()">
 Salvar captura
 </button>
 
 </div>
+
+<div class="card">
+
+<h2>Ranking</h2>
+
+<div id="ranking"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const supabaseUrl = 'https://alwepjvexmkgwwvxloli.supabase.co/rest/v1/'
+
+const supabaseKey = 'sb_publishable_TCBEZIy3uVmnxqAuOuV9Bw_WrsAdXvo'
+
+const supabaseClient =
+supabase.createClient(
+supabaseUrl,
+supabaseKey
+)
+
+async function saveCatch(){
+
+    const fish =
+    document.getElementById('fish').value
+
+    const weight =
+    document.getElementById('weight').value
+
+    const angler =
+    document.getElementById('angler').value
+
+    await supabaseClient
+    .from('catches')
+    .insert([
+        {
+            fish: fish,
+            weight: weight,
+            angler: angler
+        }
+    ])
+
+    loadRanking()
+
+}
+
+async function loadRanking(){
+
+    const { data } =
+    await supabaseClient
+    .from('catches')
+    .select('*')
+    .order('weight',
+    { ascending:false })
+
+    let html = ''
+
+    data.forEach(item => {
+
+        html += `
+        <div class="rank">
+
+        🐟 ${item.fish}<br>
+
+        ⚖️ ${item.weight} kg<br>
+
+        👤 ${item.angler}
+
+        </div>
+        `
+
+    })
+
+    document.getElementById(
+    'ranking'
+    ).innerHTML = html
+
+}
+
+loadRanking()
+
+</script>
 
 </body>
 </html>
